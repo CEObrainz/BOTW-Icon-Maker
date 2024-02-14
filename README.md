@@ -1,9 +1,9 @@
 # BOTW Icon Maker
 A tool to automate the sbitemico creation process.
 # Download
-Get the tool from [here](https://github.com/CEObrainz/BOTW-Icon-Maker/releases)\
+Get the tool from [here](https://github.com/CEObrainz/BOTW-Icon-Maker/releases)
 
-Requirement: Requires a minimum of .NET Framework 4.6, which you can download [here.](https://www.microsoft.com/en-us/download/details.aspx?id=53344)\
+Requirement: Requires a minimum of .NET Framework 4.6, which you can download [here](https://www.microsoft.com/en-us/download/details.aspx?id=53344)\
 Note: Currently, only Wii U sbitemico creation is supported (Switch coming soon).
 # Usage
 ## Command Line
