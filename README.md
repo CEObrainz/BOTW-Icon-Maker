@@ -1,9 +1,9 @@
 # BOTW Icon Maker
 A tool to automate the sbitemico creation process.
 # Download
-Get the tool from [here](https://github.com/CEObrainz/BOTW-Icon-Maker/releases)
+Get the tool from [here.](https://github.com/CEObrainz/BOTW-Icon-Maker/releases)
 
-Requirement: Requires a minimum of .NET Framework 6.0, which you can download [here]([https://www.microsoft.com/en-us/download/details.aspx?id=53344](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)\
+Requirement: Requires a minimum of .NET Framework 6.0, which you can download [here.](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)\
 Note: Currently, only Wii U sbitemico creation is supported (Switch coming soon).
 # Usage
 ## Command Line
@@ -11,7 +11,7 @@ Note: Currently, only Wii U sbitemico creation is supported (Switch coming soon)
 
 [Version]                Choose either "wiiu" or "switch". If not specified, it defaults to "wiiu". [Optional] \
 [Source Folder]          The folder where your images are located. If not specified, it uses the current folder. \
-[Destination Folder]     The folder where your files will be saved. If not specified, it creates an "output" folder in the source folder. \
+[Destination Folder]     The folder where your files will be saved. If not specified, it creates an "output" folder in the source folder.
 
 #### Examples:
 `.\BOTWIconMaker.exe wiiu images output_images`\
