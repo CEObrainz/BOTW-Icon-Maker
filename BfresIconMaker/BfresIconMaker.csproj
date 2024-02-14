@@ -8,8 +8,11 @@
     <OutputType>Exe</OutputType>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
     <StartupObject>BfresIconMaker.Program</StartupObject>
-    <Title>BFRES Icon Maker</Title>
+    <Title>BOTW Icon Maker</Title>
     <Platforms>AnyCPU;x86</Platforms>
+    <PackageProjectUrl>https://github.com/CEObrainz/BOTW-Icon-Maker/tree/master</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,7 +38,7 @@
       <HintPath>Lib\Syroot.Maths.dll</HintPath>
     </Reference>
     <Reference Include="Syroot.NintenTools.Bfres">
-      <HintPath>D:\Christopher\Downloads\Syroot.NintenTools.Bfres.dll</HintPath>
+      <HintPath>Lib\Syroot.NintenTools.NSW.Bfres.dll</HintPath>
     </Reference>
     <Reference Include="Syroot.NintenTools.NSW.Bfres">
       <HintPath>Lib\Syroot.NintenTools.NSW.Bfres.dll</HintPath>
@@ -65,6 +68,13 @@
 
   <ItemGroup>
     <Folder Include="Lib\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>
