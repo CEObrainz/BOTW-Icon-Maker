@@ -1,17 +1,19 @@
-﻿using EveryFileExplorer;
-using Syroot.NintenTools.Bfres;
-using Syroot.NintenTools.Bfres.WiiU;
+﻿using BfresLibrary;
+using BfresLibrary.PlatformConverters;
+using EveryFileExplorer;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
-namespace BfresIconMaker
-{ 
+namespace BOTWIconMaker
+{
     class Program
     {
         public static string? version { get; set; }
         public static string? folder { get; set; }
         public static string? outfolder { get; set; }
+        public static int created { get; set; }
+        public static int skipped { get; set; }
 
         static void Main(string[] args)
         {
@@ -22,25 +24,21 @@ namespace BfresIconMaker
             {
                 if (args.Length == 1)
                 {
-                    // Argument can be version or input folder
                     checkArg0(args[0]);
                     outfolder = folder + "/output";
                 }
                 else if (args.Length == 2)
                 {
-                    // Argument0 can be version or input folder
-                    // Argument1 can be input folder or output folder
                     checkArg1(args[0], args[1]);
                 }
                 else if (args.Length == 3)
                 {
-                    // Argument0 must be version
-                    // Argument1 must be input folder
                     checkArg2(args[0], args[1]);
                     outfolder = args[2];
-                } else
+                }
+                else
                 {
-                    displayHelp();
+                  displayHelp();
                 }
             }
             processFiles(version, folder, outfolder);
@@ -54,6 +52,24 @@ namespace BfresIconMaker
             else if (Directory.Exists(arg))
             {
                 folder = arg;
+            }
+            else if (File.Exists(arg))
+            {
+                if (isImage(arg))
+                {
+                    folder = new FileInfo(arg).Directory.FullName;
+                    outfolder = folder + "/output";
+                    MemoryStream mem = new MemoryStream();
+                    string Name = Path.GetFileNameWithoutExtension(arg);
+                    if (!Directory.Exists(outfolder))
+                        Directory.CreateDirectory(outfolder);
+                    createBFRES_wiiu(mem, arg, Name, outfolder, true);
+                    System.Environment.Exit(1);
+                }
+                else
+                {
+                    displayHelp();
+                }
             }
             else
             {
@@ -69,7 +85,7 @@ namespace BfresIconMaker
                 {
                     folder = arg1;
                     outfolder = folder + "/output";
-                } 
+                }
                 else
                 {
                     displayHelp();
@@ -95,22 +111,22 @@ namespace BfresIconMaker
         }
         private static bool isVersion(String version)
         {
-           return version.ToLower() == "wiiu" || version.ToLower() == "switch";
+            return version.ToLower() == "wiiu" || version.ToLower() == "switch";
         }
         private static void displayHelp()
         {
             Console.WriteLine("\n Sbitemico Maker\n");
             Console.WriteLine(" Usage:");
-            Console.WriteLine("  .\\BfresIconMaker.exe [Version] [Source Folder] [Destination Folder]\n");
+            Console.WriteLine("  .\\BfresIconMaker.exe [Version] [Source Folder] [Destination Folder]");
+            Console.WriteLine("  .\\BfresIconMaker.exe [ImagePath(s)]\n");
             Console.WriteLine("  [Version]              Choose either \"wiiu\" or \"switch\". If not specified, it defaults to \"wiiu\". [Optional]");
             Console.WriteLine("  [Source Folder]        The folder where your images are located. If not specified, it uses the current folder.");
             Console.WriteLine("  [Destination Folder]   The folder where your files will be saved. If not specified, it creates an \"output\" folder in the source folder.");
+            Console.WriteLine("  [Image Path]           The image you want to turn into an icon (Supports multiple images via Drag and Drop).");
             System.Environment.Exit(1);
         }
         static void processFiles(string version, string folder, string outfolder)
         {
-            int skipped = 0;
-            int created = 0;
             List<string> imageLocations = new List<string>();
             string[] files = Directory.GetFiles(folder);
             foreach (string file in files)
@@ -121,9 +137,9 @@ namespace BfresIconMaker
                 }
             }
             if (imageLocations.Count == 0)
-                {
-                    Console.WriteLine("No images found in: " + new DirectoryInfo(folder).Name);
-                    System.Environment.Exit(1);
+            {
+                Console.WriteLine("No images found in: " + new DirectoryInfo(folder).Name);
+                System.Environment.Exit(1);
             }
             if (!Directory.Exists(outfolder))
                 Directory.CreateDirectory(outfolder);
@@ -131,43 +147,26 @@ namespace BfresIconMaker
             {
                 string Name = Path.GetFileNameWithoutExtension(location);
                 string uniqueName = Path.GetFileName(location);
-                string FileName = uniqueName + ".bitemico";
                 Console.WriteLine("Creating bfres for " + uniqueName);
+                
                 try
                 {
-                    createBFRES(location, Name, FileName, version);
-                    if (File.Exists(outfolder + "/" + FileName))
+                    MemoryStream mem = new MemoryStream();
+                    if (version == "wiiu")
                     {
-                        Byte[] newFile = YAZ0.Compress(outfolder + "/" + FileName);
-                        string NewName = "/" + Name + ".sbitemico";
-                        if (File.Exists(outfolder + NewName))
-                        {
-                            File.Delete(outfolder + NewName);
-                        }
-                        File.WriteAllBytes(outfolder + NewName, newFile);
-                        File.Delete(outfolder + "/" + FileName);
-                        created += 1;
-                    } else
+                        createBFRES_wiiu(mem, location, Name, outfolder, true);
+                    }
+                    else
                     {
-                        Console.WriteLine("Image too large to create sbitemico: " + uniqueName);
-                        skipped += 1;
+                        createBFRES_switch(mem, location, Name, outfolder);
                     }
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     Console.WriteLine("Failed to create sbitemico for: " + uniqueName);
                     skipped += 1;
-                    Console.WriteLine(e.ToString());
-                    if (File.Exists(outfolder + "/" + FileName))
-                    {
-                        File.Delete(outfolder + "/" + FileName);
-                    }
                 }
             });
-            if (created == 0)
-            {
-                Directory.Delete(outfolder);
-            }
             Console.WriteLine("\nCreated {0} sbitemico files.", created);
             Console.WriteLine("Skipped {0} image files.", skipped);
         }
@@ -176,48 +175,89 @@ namespace BfresIconMaker
             string extension = Path.GetExtension(filePath).ToLower();
             return extension == ".jpg" || extension == ".jpeg" || extension == ".png" || extension == ".gif" || extension == ".bmp";
         }
-        static void createBFRES(string filePath, string Name, string FileName, string version)
+        static ResFile createBFRES_wiiu(MemoryStream mem, string filePath, string Name, string outfolder, bool save)
         {
             Bitmap bitmap = new Bitmap(Image.FromFile(filePath));
             if (bitmap.Height > 512 || bitmap.Width > 512)
             {
-                return;
+                Console.WriteLine("Image too large to create sbitemico: " + filePath);
+                skipped += 1;
+                return null;
             }
             ResFile bfresFile = new ResFile();
-            if (version == "switch")
-            {
-                bfresFile.VersionMajor = 4;
-                bfresFile.VersionMajor2 = 5;
-                bfresFile.VersionMinor = 0;
-                bfresFile.VersionMinor2 = 3;
-                bfresFile.Alignment = 4096;
-                bfresFile.IsPlatformSwitch = true;
+            bfresFile.VersionMajor = 4;
+            bfresFile.Alignment = 2048;
+            bfresFile.VersionMajor2 = 5;
+            bfresFile.VersionMinor = 0;
+            bfresFile.VersionMinor2 = 3;
+            bfresFile.Name = Name + ".bitemico";
 
+            TextureShared texture = createTexture(bitmap, Name);
+            bfresFile.Textures.Add(texture.Name, texture);
+
+            if (save)
+            {
+                bfresFile.Save(mem);
+                string path = outfolder + "/" + Name + ".sbitemico";
+                File.WriteAllBytes(path, YAZ0.Compress(mem.ToArray()));
+                created += 1;
+                return null;
             }
             else
             {
-                bfresFile.VersionMajor = 4;
-                bfresFile.VersionMajor2 = 5;
-                bfresFile.VersionMinor = 0;
-                bfresFile.VersionMinor2 = 3;
-                bfresFile.Alignment = 2048;
+                return bfresFile;
             }
+        }
+        static void createBFRES_switch(MemoryStream mem, string filePath, string Name, string outfolder)
+        {
+            Bitmap bitmap = new Bitmap(Image.FromFile(filePath));
+            if (bitmap.Height > 512 || bitmap.Width > 512)
+            {
+                Console.WriteLine("Image too large to create sbitemico: " + filePath);
+                skipped += 1;
+                return;
+            }
+            ResFile bfresFile = new ResFile();
+            bfresFile.VersionMajor = 0;
+            bfresFile.Alignment = 4096;
+            bfresFile.VersionMajor2 = 5;
+            bfresFile.VersionMinor = 0;
+            bfresFile.VersionMinor2 = 3;
             bfresFile.Name = Name + ".bitemico";
+            bfresFile.IsPlatformSwitch = true;
 
-            Texture texture = new Texture();
+            TextureShared texture = createTexture(bitmap, Name);
+
+            ResFile resFile = createBFRES_wiiu(mem, filePath, Name, outfolder, false);
+            if (resFile == null)
+            {
+                return;
+            }
+            resFile.ChangePlatform(true, 4096, 0, 5, 0, 3, ConverterHandle.BOTW);
+            Console.WriteLine("Hello");
+            resFile.Alignment = 0x0C;
+            resFile.Save(mem);
+            string path = outfolder + "/" + Name + ".sbitemico";
+            File.WriteAllBytes(path, YAZ0.Compress(mem.ToArray()));
+            created += 1;
+        }
+        static BfresLibrary.WiiU.Texture createTexture(Bitmap bitmap, String Name)
+        {
+            byte[] Data = imageToByte(swapRedBlueChannels(bitmap));
+
+            BfresLibrary.WiiU.Texture texture = new BfresLibrary.WiiU.Texture();
             texture.Name = Name;
             texture.Width = (uint)bitmap.Width;
             texture.Height = (uint)bitmap.Height;
             texture.MipCount = 1;
-            texture.Format = Syroot.NintenTools.Bfres.GX2.GX2SurfaceFormat.TCS_R8_G8_B8_A8_SRGB;
-            texture.Use = Syroot.NintenTools.Bfres.GX2.GX2SurfaceUse.Texture;
+            texture.Format = BfresLibrary.GX2.GX2SurfaceFormat.TCS_R8_G8_B8_A8_SRGB;
+            texture.Use = BfresLibrary.GX2.GX2SurfaceUse.Texture;
             texture.Pitch = 96;
             texture.Alignment = 2048;
-            byte[] Data = imageToByte(swapRedBlueChannels(bitmap));
-            Syroot.NintenTools.Bfres.Swizzling.GX2.GX2Surface GX2SurfaceTexture = Syroot.NintenTools.Bfres.Swizzling.GX2.CreateGx2Texture(Data, Name, 4, 0, (uint)bitmap.Width, (uint)bitmap.Height, 1, 1050, 0, 1, 1);
+
+            BfresLibrary.Swizzling.GX2.GX2Surface GX2SurfaceTexture = BfresLibrary.Swizzling.GX2.CreateGx2Texture(Data, Name, 4, 0, (uint)bitmap.Width, (uint)bitmap.Height, 1, 1050, 0, 1, 1);
             texture.Data = GX2SurfaceTexture.data;
-            bfresFile.Textures.Add(texture.Name, texture);
-            bfresFile.Save(outfolder + "/" + FileName);
+            return texture;
         }
         public static Bitmap swapRedBlueChannels(Bitmap bitmap)
         {
@@ -235,7 +275,7 @@ namespace BfresIconMaker
         }
         public static byte[] imageToByte(Bitmap bitmap)
         {
-            BitmapData bitmapData = null;
+            BitmapData bitmapData = new BitmapData();
             try
             {
                 bitmapData = bitmap.LockBits(new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, bitmap.PixelFormat);

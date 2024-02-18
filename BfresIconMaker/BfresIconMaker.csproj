@@ -1,5 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net6.0-windows7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -7,13 +7,18 @@
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
     <OutputType>Exe</OutputType>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
-    <StartupObject>BfresIconMaker.Program</StartupObject>
+    <StartupObject>BOTWIconMaker.Program</StartupObject>
     <Title>BOTW Icon Maker</Title>
     <Platforms>AnyCPU;x86</Platforms>
     <PackageProjectUrl>https://github.com/CEObrainz/BOTW-Icon-Maker/tree/master</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Unused\**" />
+    <EmbeddedResource Remove="Unused\**" />
+    <None Remove="Unused\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <COMReference Include="{d37e2a3e-8545-3a39-9f4f-31827c9124ab}">
@@ -28,26 +33,14 @@
     <Reference Include="BfresLibrary">
       <HintPath>Lib\Syroot.BfresLibrary.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>Lib\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="Syroot.BinaryData">
       <HintPath>Lib\Syroot.BinaryData.dll</HintPath>
     </Reference>
     <Reference Include="Syroot.Maths">
       <HintPath>Lib\Syroot.Maths.dll</HintPath>
     </Reference>
-    <Reference Include="Syroot.NintenTools.Bfres">
-      <HintPath>Lib\Syroot.NintenTools.NSW.Bfres.dll</HintPath>
-    </Reference>
-    <Reference Include="Syroot.NintenTools.NSW.Bfres">
-      <HintPath>Lib\Syroot.NintenTools.NSW.Bfres.dll</HintPath>
-    </Reference>
     <Reference Include="Syroot.NintenTools.NSW.Bntx">
       <HintPath>Lib\Syroot.NintenTools.NSW.Bntx.dll</HintPath>
-    </Reference>
-    <Reference Include="Toolbox.Library">
-      <HintPath>Lib\Toolbox.Library.dll</HintPath>
     </Reference>
   </ItemGroup>
 
