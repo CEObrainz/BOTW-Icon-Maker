@@ -143,7 +143,8 @@ namespace BOTWIconMaker
             }
             if (!Directory.Exists(outfolder))
                 Directory.CreateDirectory(outfolder);
-            Parallel.ForEach(imageLocations, location =>
+            //Parallel.ForEach(imageLocations, new ParallelOptions { MaxDegreeOfParallelism = 4 }, location =>
+            foreach (string location in imageLocations)
             {
                 string Name = Path.GetFileNameWithoutExtension(location);
                 string uniqueName = Path.GetFileName(location);
@@ -160,13 +161,14 @@ namespace BOTWIconMaker
                     {
                         createBFRES_switch(mem, location, Name, outfolder);
                     }
+                    System.Threading.Thread.Sleep(1);
                 }
                 catch (Exception)
                 {
                     Console.WriteLine("Failed to create sbitemico for: " + uniqueName);
                     skipped += 1;
                 }
-            });
+            };
             Console.WriteLine("\nCreated {0} sbitemico files.", created);
             Console.WriteLine("Skipped {0} image files.", skipped);
         }
